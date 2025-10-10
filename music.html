@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Music Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .player {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    h2, h3 {
+      margin: 5px 0;
+    }
+
+    .controls button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 30px;
+      margin: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .controls button:hover {
+      transform: scale(1.2);
+    }
+
+    .progress-container {
+      background: rgba(255,255,255,0.3);
+      height: 6px;
+      width: 100%;
+      border-radius: 5px;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+
+    #progress {
+      background: #fff;
+      height: 100%;
+      width: 0%;
+      border-radius: 5px;
+    }
+
+    .time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .volume-control {
+      margin-top: 15px;
+    }
+
+    input[type="range"] {
+      width: 70%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <h2 id="title">Song Title</h2>
+    <h3 id="artist">Artist</h3>
+    <audio id="audio"></audio>
+    <source src="https://www.youtube.com/watch?v=cNGjD0VG4R8&list=RDcNGjD0VG4R8&start_radio=1" type="audio">
+
+    <div class="controls">
+      <button id="prev">⏮️</button>
+      <button id="play">▶️</button>
+      <button id="next">⏭️</button>
+    </div>
+
+    <div class="progress-container">
+      <div id="progress"></div>
+    </div>
+    <div class="time">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="volume-control">
+      <label>🔊</label>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+    </div>
+  </div>
+
+  <script>
+    const songs = [
+      {
+        title: "Dreams",
+        artist: "John Doe",
+        src: "song1.mp3"
+      },
+      {
+        title: "Sunset",
+        artist: "Jane Smith",
+        src: "song2.mp3"
+      },
+      {
+        title: "Ocean Waves",
+        artist: "DJ Aqua",
+        src: "song3.mp3"
+      }
+    ];
+
+    let currentSong = 0;
+    const audio = document.getElementById("audio");
+    const title = document.getElementById("title");
+    const artist = document.getElementById("artist");
+    const playBtn = document.getElementById("play");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const progress = document.getElementById("progress");
+    const progressContainer = document.querySelector(".progress-container");
+    const currentTimeEl = document.getElementById("current-time");
+    const durationEl = document.getElementById("duration");
+    const volumeSlider = document.getElementById("volume");
+
+    function loadSong(song) {
+      title.textContent = song.title;
+      artist.textContent = song.artist;
+      audio.src = song.src;
+    }
+
+    loadSong(songs[currentSong]);
+
+    function playSong() {
+      audio.play();
+      playBtn.textContent = "⏸️";
+    }
+
+    function pauseSong() {
+      audio.pause();
+      playBtn.textContent = "▶️";
+    }
+
+    playBtn.addEventListener("click", () => {
+      const isPlaying = !audio.paused;
+      isPlaying ? pauseSong() : playSong();
+    });
+
+    nextBtn.addEventListener("click", nextSong);
+    prevBtn.addEventListener("click", prevSong);
+
+    function nextSong() {
+      currentSong = (currentSong + 1) % songs.length;
+      loadSong(songs[currentSong]);
+      playSong();
+    }
+
+    function prevSong() {
+      currentSong = (currentSong - 1 + songs.length) % songs.length;
+      loadSong(songs[currentSong]);
+      playSong();
+    }
+
+    audio.addEventListener("timeupdate", (e) => {
+      const { currentTime, duration } = e.srcElement;
+      const progressPercent = (currentTime / duration) * 100;
+      progress.style.width = `${progressPercent}%`;
+
+      const currMin = Math.floor(currentTime / 60);
+      const currSec = Math.floor(currentTime % 60);
+      const durMin = Math.floor(duration / 60);
+      const durSec = Math.floor(duration % 60);
+      currentTimeEl.textContent = `${currMin}:${currSec < 10 ? "0" + currSec : currSec}`;
+      durationEl.textContent = `${durMin || 0}:${durSec < 10 ? "0" + durSec : durSec || 0}`;
+    });
+
+    progressContainer.addEventListener("click", (e) => {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
+    });
+
+    volumeSlider.addEventListener("input", (e) => {
+      audio.volume = e.target.value;
+    });
+
+    audio.addEventListener("ended", nextSong);
+  </script>
+</body>
+</html>
