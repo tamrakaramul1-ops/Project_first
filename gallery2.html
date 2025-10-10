@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filtered Image Gallery</title>
+  <style>
+    /* ===== BASIC STYLING ===== */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      color: #222;
+    }
+
+    /* ===== FILTER BUTTONS ===== */
+    .filter-buttons {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .filter-buttons button:hover,
+    .filter-buttons button.active {
+      background: #0056b3;
+    }
+
+    /* ===== GALLERY GRID ===== */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ===== LIGHTBOX ===== */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 10px;
+    }
+
+    .prev, .next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 40px;
+      background: rgba(0, 0, 0, 0.4);
+      border: none;
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 50%;
+    }
+
+    .prev:hover, .next:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .prev { left: 5%; }
+    .next { right: 5%; }
+
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .prev, .next {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌍 Filtered Image Gallery</h1>
+
+  <!-- FILTER BUTTONS -->
+  <div class="filter-buttons">
+    <button class="active" data-category="all">All</button>
+    <button data-category="nature">Nature</button>
+    <button data-category="animals">Animals</button>
+    <button data-category="cities">Cities</button>
+  </div>
+
+  <!-- IMAGE GALLERY -->
+  <div class="gallery">
+    <img src="WhatsApp Image 2025-10-10 at 11.53.10 AM.jpeg" alt="Nature" data-category="nature">
+    <img src="WhatsApp Image 2025-10-10 at 9.14.22 PM.jpeg" alt="Nature" data-category="nature">
+    <img src="WhatsApp Image 2025-10-10 at 9.14.22 PM (1).jpeg" alt="Animal" data-category="animals">
+    <img src="WhatsApp Image 2025-10-10 at 9.14.22 PM (2).jpeg" alt="Animal" data-category="animals">
+    <img src="WhatsApp Image 2025-10-10 at 9.33.59 PM.jpeg" alt="City" data-category="cities">
+    <img src="WhatsApp Image 2025-10-10 at 9.33.53 PM.jpeg" alt="City" data-category="cities">
+  </div>g
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <span class="close" id="close">&times;</span>
+    <button class="prev" id="prev">&#10094;</button>
+    <img id="lightbox-img" src="">
+    <button class="next" id="next">&#10095;</button>
+  </div>
+
+  <script>
+    const galleryImages = document.querySelectorAll('.gallery img');
+    const filterButtons = document.querySelectorAll('.filter-buttons button');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const closeBtn = document.getElementById('close');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+
+    let currentIndex = 0;
+
+    // ====== LIGHTBOX FUNCTIONALITY ======
+    galleryImages.forEach((img, index) => {
+      img.addEventListener('click', () => {
+        lightbox.style.display = 'flex';
+        lightboxImg.src = img.src;
+        currentIndex = index;
+      });
+    });
+
+    closeBtn.addEventListener('click', () => {
+      lightbox.style.display = 'none';
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+      lightboxImg.src = galleryImages[currentIndex].src;
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % galleryImages.length;
+      lightboxImg.src = galleryImages[currentIndex].src;
+    });
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.style.display = 'none';
+    });
+
+    // ====== FILTER FUNCTIONALITY ======
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+
+        // Active button styling
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        galleryImages.forEach(img => {
+          if (category === 'all' || img.getAttribute('data-category') === category) {
+            img.style.display = 'block';
+          } else {
+            img.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
